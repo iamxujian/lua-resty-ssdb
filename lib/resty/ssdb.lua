@@ -109,11 +109,15 @@ end
 
 local function _read_reply(sock)
 	local val = {}
+	local ret_err = nil
 
 	while true do
 		-- read block size
 		local line, err, partial = sock:receive()
 		if not line or len(line)==0 then
+			if err then
+			    ret_err = err
+			end
 			-- packet end
 			break
 		end
@@ -121,14 +125,25 @@ local function _read_reply(sock)
 
 		-- read block data
 		local data, err, partial = sock:receive(d_len)
+		if not line and err then
+		    ret_err = err
+                    break
+		end
 		insert(val, data);
 
 		-- ignore the trailing lf/crlf after block data
 		local line, err, partial = sock:receive()
+		if not line and err then
+		    ret_err = err
+                    break
+		end
 	end
 
 	local v_num = tonumber(#val)
 
+	if ret_err then
+		return nil, ret_err
+	end
 	if v_num == 1 then
 		return val
 	else
