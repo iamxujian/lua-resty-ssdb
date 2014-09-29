@@ -125,7 +125,7 @@ local function _read_reply(sock)
 
 		-- read block data
 		local data, err, partial = sock:receive(d_len)
-		if not line and err then
+		if not data and err then
 		    ret_err = err
                     break
 		end
